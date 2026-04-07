@@ -66,9 +66,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.AllowAnyOrigin() // chỉ test local, **không dùng production**
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+        policy.WithOrigins("http://223.130.11.150")  // <=== địa chỉ frontend
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials(); // nếu dùng cookie
     });
 });
 
