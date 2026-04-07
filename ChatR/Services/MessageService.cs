@@ -23,27 +23,23 @@ namespace ChatR.Services
         public async Task<object> SendMessageAsync(long senderId, SendMessageDto dto, CancellationToken cancellationToken = default)
         {
             dto.Content ??= "";
-            dto.ChannelId ??= 0;
-            dto.ConversationId ??= 0;
 
             Conversation? conversation = null;
 
-            if (dto.ConversationId > 0)
+            // 🔥 PRIVATE CHAT (auto create hoặc dùng lại)
+            if (dto.ReceiverId.HasValue)
             {
+                var userIds = new[] { (int)senderId, dto.ReceiverId.Value };
+
                 conversation = await _dbContext.Conversations
                     .Include(c => c.ConversationMembers)
-                    .FirstOrDefaultAsync(c => c.ConversationId == dto.ConversationId, cancellationToken);
-            }
-            else if (dto.ReceiverId.HasValue)
-            {
-                conversation = await _dbContext.Conversations
-                    .Include(c => c.ConversationMembers)
+                    .Where(c => c.Type == 1)
                     .FirstOrDefaultAsync(c =>
-                        c.Type == 1 &&
-                        c.ConversationMembers.Any(cm => cm.UserId == senderId) &&
-                        c.ConversationMembers.Any(cm => cm.UserId == dto.ReceiverId.Value),
+                        c.ConversationMembers.Count == 2 &&
+                        c.ConversationMembers.All(cm => userIds.Contains(cm.UserId)),
                         cancellationToken);
 
+                // 👉 Nếu chưa có → tạo mới
                 if (conversation == null)
                 {
                     conversation = new Conversation
@@ -57,16 +53,21 @@ namespace ChatR.Services
 
                     _dbContext.ConversationMembers.AddRange(new[]
                     {
-                        new ConversationMember { ConversationId = conversation.ConversationId, UserId = (int)senderId },
-                        new ConversationMember { ConversationId = conversation.ConversationId, UserId = dto.ReceiverId.Value }
-                    });
+                new ConversationMember { ConversationId = conversation.ConversationId, UserId = (int)senderId },
+                new ConversationMember { ConversationId = conversation.ConversationId, UserId = dto.ReceiverId.Value }
+            });
 
                     await _dbContext.SaveChangesAsync(cancellationToken);
                 }
             }
 
-            int? conversationId = conversation?.ConversationId;
+            // ❗ VALIDATE
+            if (conversation == null && (dto.ChannelId == null || dto.ChannelId <= 0))
+            {
+                throw new Exception("Phải có receiverId hoặc channelId");
+            }
 
+            // 🔥 TẠO MESSAGE
             var message = new Message
             {
                 SenderId = (int)senderId,
@@ -74,12 +75,21 @@ namespace ChatR.Services
                 CreatedAt = DateTime.UtcNow,
                 IsDeleted = 0,
                 ChannelId = dto.ChannelId > 0 ? dto.ChannelId : null,
-                ConversationId = conversationId
+                ConversationId = conversation?.ConversationId
             };
 
             _dbContext.Messages.Add(message);
-            await _dbContext.SaveChangesAsync(cancellationToken);
 
+            try
+            {
+                await _dbContext.SaveChangesAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+            }
+
+            // 🔥 EVENT
             await _eventPublisher.PublishAsync(
                 new MessageCreatedEvent(
                     message.MessageId,
