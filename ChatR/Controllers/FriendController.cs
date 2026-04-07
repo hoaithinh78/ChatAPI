@@ -24,22 +24,17 @@ namespace ChatR.Controllers
         [HttpGet("get-friends")]
         public async Task<IActionResult> GetFriends()
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value); // Lấy UserId từ token
-
-            // Truy vấn bảng Friends để lấy danh sách bạn bè của người dùng
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value); 
             var friends = await _dbContext.Friends
                 .Where(f => f.UserId == userId || f.FriendId == userId)
-                .Include(f => f.UserInfo)  // Bao gồm thông tin người dùng (người gửi)
-                .Include(f => f.FriendInfo)  // Bao gồm thông tin bạn bè (người nhận)
+                .Include(f => f.UserInfo)  
+                .Include(f => f.FriendInfo)  
                 .ToListAsync();
 
-            // Nếu không có bạn bè, trả về lỗi NotFound
             if (friends == null || !friends.Any())
             {
                 return NotFound("Bạn chưa có bạn bè.");
             }
-
-            // Trả về danh sách bạn bè với thông tin người dùng và bạn bè
             return Ok(friends.Select(f => new
             {
                 FriendId = f.UserId == userId ? f.FriendId : f.UserId,

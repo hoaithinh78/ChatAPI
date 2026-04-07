@@ -1,12 +1,14 @@
 ﻿using ChatR.DTOs.Channels;
 using ChatR.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChatR.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
+    [Authorize]
     public class ChannelController : ControllerBase
     {
         private readonly ChannelService _channelService;
@@ -14,6 +16,13 @@ namespace ChatR.Controllers
         public ChannelController(ChannelService channelService)
         {
             _channelService = channelService;
+        }
+
+        [HttpGet("server/{serverId}")]
+        public async Task<IActionResult> GetChannelsByServerId(int serverId)
+        {
+            var channels = await _channelService.GetChannelsByServerIdAsync(serverId);
+            return Ok(channels);
         }
 
         [HttpPost("create")]
@@ -35,13 +44,6 @@ namespace ChatR.Controllers
                     message = ex.Message
                 });
             }
-        }
-
-        [HttpGet("server/{serverId}")]
-        public async Task<IActionResult> GetChannelsByServerId(int serverId)
-        {
-            var channels = await _channelService.GetChannelsByServerIdAsync(serverId);
-            return Ok(channels);
         }
     }
 }

@@ -190,5 +190,23 @@ namespace ChatR.Services
                 return cipher;
             }
         }
+        public async Task<object> GetMessagesByChannelAsync(int channelId, CancellationToken cancellationToken = default)
+        {
+            var messages = await _dbContext.Messages
+                .Where(m => m.ChannelId == channelId)
+                .OrderBy(m => m.CreatedAt)
+                .ToListAsync(cancellationToken);
+
+            return messages.Select(m => new
+            {
+                m.MessageId,
+                m.SenderId,
+                Content = m.IsDeleted == 1 ? "[Message deleted]" : SafeDecrypt(m.Content),
+                m.CreatedAt,
+                m.EditedAt,
+                m.IsDeleted,
+                m.ChannelId
+            });
+        }
     }
 }

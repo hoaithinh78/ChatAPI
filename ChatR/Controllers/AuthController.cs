@@ -91,32 +91,8 @@ namespace ChatR.Controllers
             return Ok(new { Token = token });
         }
 
-        [HttpPut("update")]
-        public async Task<IActionResult> UpdateUser([FromBody] UserUpdateDto userUpdateDto)
-        {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value); 
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+        
 
-            if (user == null)
-            {
-                return NotFound("Người dùng không tồn tại.");
-            }
-
-            user.DisplayName = userUpdateDto.DisplayName;
-            user.Bio = userUpdateDto.Bio;
-            user.AvatarUrl = userUpdateDto.AvatarUrl;
-
-            _dbContext.Users.Update(user);
-            await _dbContext.SaveChangesAsync();
-
-            return Ok(user);
-        }
-
-        public class UserUpdateDto
-        {
-            public string DisplayName { get; set; }
-            public string Bio { get; set; }
-            public string AvatarUrl { get; set; }
-        }
+       
     }
 }

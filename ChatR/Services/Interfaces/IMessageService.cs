@@ -12,5 +12,6 @@ namespace ChatR.Services.Interfaces
         Task<object> EditMessageAsync(int senderId, EditMessageDto dto, CancellationToken cancellationToken = default);
 
         Task DeleteMessageAsync(int senderId, int messageId, CancellationToken cancellationToken = default);
+        Task<object> GetMessagesByChannelAsync(int channelId, CancellationToken cancellationToken = default);
     }
 }

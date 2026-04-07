@@ -1,7 +1,6 @@
 ﻿using ChatR.Data;
 using ChatR.DTOs;
 using ChatR.DTOs.Server;
-using ChatR.Enums;
 using ChatR.Interface.AbstractFactory;
 using ChatR.Models;
 using Microsoft.EntityFrameworkCore;
@@ -31,8 +30,9 @@ namespace ChatR.Services
                 ServerName = createServerDto.ServerName.Trim(),
                 OwnerId = userId,
                 Description = createServerDto.Description,
+                IconUrl = createServerDto.IconUrl,
                 CreatedAt = DateTime.UtcNow,
-                TotalMembers = 1,
+                TotalMembers = 0, // để trigger Oracle tự cộng
                 OnlineMembers = 0,
                 Score = 0
             };
@@ -76,7 +76,6 @@ namespace ChatR.Services
 
             await _dbContext.SaveChangesAsync();
 
-            // Lấy lại permissions theo cách an toàn cho Oracle
             var dbPermissions = new List<Permission>();
 
             foreach (var item in permissionsFromFactory)
@@ -112,11 +111,6 @@ namespace ChatR.Services
                 .Where(sm => sm.ServerId == serverId)
                 .ToListAsync();
 
-            if (!members.Any())
-            {
-                throw new Exception("Không có thành viên nào trong server này.");
-            }
-
             return members;
         }
 
@@ -148,7 +142,9 @@ namespace ChatR.Services
             };
 
             _dbContext.ServerMembers.Add(member);
-            server.TotalMembers += 1;
+
+            // Không cộng server.TotalMembers ở đây nữa
+            // vì trigger Oracle trg_add_member sẽ tự cộng
 
             await _dbContext.SaveChangesAsync();
 

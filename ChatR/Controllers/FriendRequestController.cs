@@ -1,14 +1,16 @@
-﻿using ChatR.Models;
+﻿using ChatR.Data;
+using ChatR.DTOs;
+using ChatR.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using ChatR.Data;
-using ChatR.DTOs;
 namespace ChatR.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class FriendRequestController : ControllerBase
     {
         private readonly AppDbContext _dbContext;
@@ -36,7 +38,35 @@ namespace ChatR.Controllers
                 .ToListAsync();
             return Ok(friendRequests);
         }
+        [HttpGet("sent-requests")]
+        public async Task<IActionResult> GetSentRequests()
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
+            var sentRequests = await _dbContext.FriendRequests
+                .Where(r => r.SenderId == userId && r.Status == 0)
+                .Select(r => new
+                {
+                    r.RequestId,
+                    ReceiverId = r.ReceiverId,
+                    ReceiverUsername = _dbContext.Users
+                        .Where(u => u.UserId == r.ReceiverId)
+                        .Select(u => u.Username)
+                        .FirstOrDefault(),
+                    ReceiverDisplayName = _dbContext.Users
+                        .Where(u => u.UserId == r.ReceiverId)
+                        .Select(u => u.DisplayName)
+                        .FirstOrDefault(),
+                    ReceiverAvatarUrl = _dbContext.Users
+                        .Where(u => u.UserId == r.ReceiverId)
+                        .Select(u => u.AvatarUrl)
+                        .FirstOrDefault(),
+                    r.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(sentRequests);
+        }
         [HttpPost("send-friend-request")]
         public async Task<IActionResult> SendFriendRequest([FromBody] FriendRequestDto friendRequestDto)
         {
@@ -112,6 +142,38 @@ namespace ChatR.Controllers
             await _dbContext.SaveChangesAsync();
 
             return Ok("Yêu cầu kết bạn đã được chấp nhận.");
+        }
+        [HttpDelete("cancel-friend-request/{requestId}")]
+        public async Task<IActionResult> CancelFriendRequest(int requestId)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            var request = await _dbContext.FriendRequests
+                .FirstOrDefaultAsync(r => r.RequestId == requestId && r.SenderId == userId && r.Status == 0);
+
+            if (request == null)
+                return NotFound("Không tìm thấy lời mời để hủy.");
+
+            _dbContext.FriendRequests.Remove(request);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok("Đã hủy lời mời kết bạn.");
+        }
+        [HttpPost("reject-friend-request")]
+        public async Task<IActionResult> RejectFriendRequest([FromBody] int requestId)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            var request = await _dbContext.FriendRequests
+                .FirstOrDefaultAsync(r => r.RequestId == requestId && r.ReceiverId == userId && r.Status == 0);
+
+            if (request == null)
+                return NotFound("Yêu cầu kết bạn không tồn tại.");
+
+            _dbContext.FriendRequests.Remove(request);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok("Đã từ chối yêu cầu kết bạn.");
         }
     }
 }

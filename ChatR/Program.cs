@@ -66,7 +66,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://223.130.11.150")  // <=== địa chỉ frontend
+        policy.WithOrigins("http://223.130.11.150", " http://192.168.1.228:3000", "http://localhost:3000")  // <=== địa chỉ frontend
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials(); // nếu dùng cookie
@@ -118,10 +118,13 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IFriendSidebarService, FriendSidebarService>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IEventPublisher, EventPublisher>();
 builder.Services.AddScoped<IEventHandler<MessageCreatedEvent>, MessageNotificationHandler>();
+
 
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IMessageService, MessageService>();
@@ -142,6 +145,12 @@ builder.Services.AddScoped<ChannelService>();
 
 builder.Services.AddSingleton<ServerSetupFactoryProvider>();
 builder.Services.AddScoped<ChannelFactoryProvider>();
+
+//Singleton pattern for event publisher
+builder.Services.AddSingleton<IOnlineUserManager, OnlineUserManager>();
+
+//
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 var app = builder.Build();
 
