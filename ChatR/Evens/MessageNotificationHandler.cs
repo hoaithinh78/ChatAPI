@@ -6,25 +6,35 @@ namespace ChatR.Evens
     public class MessageNotificationHandler : IEventHandler<MessageCreatedEvent>
     {
         private readonly INotificationRepository _notificationRepository;
+        private readonly IUserRepository _userRepository; 
 
-        public MessageNotificationHandler(INotificationRepository notificationRepository)
+        public MessageNotificationHandler(
+            INotificationRepository notificationRepository,
+            IUserRepository userRepository)  
         {
             _notificationRepository = notificationRepository;
+            _userRepository = userRepository;
         }
 
         public async Task HandleAsync(MessageCreatedEvent domainEvent, CancellationToken cancellationToken = default)
         {
-            // Demo đơn giản: tạo notification cho conversation/channel
-            var notification = new Notification
-            {
-                Type = 1,
-                Content = $"New message from user {domainEvent.SenderId}",
-                UserId = domainEvent.SenderId, // chỗ này thực tế phải là recipient
-                CreatedAt = DateTime.UtcNow,
-                IsRead = 0
-            };
+            if (domainEvent.ConversationId == null) return;
 
-            await _notificationRepository.AddAsync(notification);
+            var members = await _userRepository.GetUsersInConversation(domainEvent.ConversationId.Value);
+
+            foreach (var member in members.Where(m => m.UserId != domainEvent.SenderId))
+            {
+                var notification = new Notification
+                {
+                    Type = 1,
+                    Content = $"New message from user {domainEvent.SenderId}",
+                    UserId = member.UserId, // recipient thực sự
+                    CreatedAt = DateTime.UtcNow,
+                    IsRead = 0
+                };
+
+                await _notificationRepository.AddAsync(notification);
+            }
         }
     }
 }

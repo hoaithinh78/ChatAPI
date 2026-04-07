@@ -4,18 +4,18 @@ namespace ChatR.Evens
 {
     public class MessageCreatedEvent : IDomainEvent
     {
-        public long MessageId { get; }
-        public long SenderId { get; }
-        public long? ChannelId { get; }
-        public long? ConversationId { get; }
+        public int MessageId { get; }         // long → int
+        public int SenderId { get; }          // long → int
+        public int? ChannelId { get; }        // long? → int?
+        public int? ConversationId { get; }   // long? → int?
         public string Content { get; }
         public DateTime OccurredOn { get; }
 
         public MessageCreatedEvent(
-            long messageId,
-            long senderId,
-            long? channelId,
-            long? conversationId,
+            int messageId,
+            int senderId,
+            int? channelId,
+            int? conversationId,
             string content)
         {
             MessageId = messageId;

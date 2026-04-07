@@ -1,6 +1,6 @@
 ﻿// RegisterController.cs
 using ChatR.Data;
-using ChatR.DTOs;
+using ChatR.DTOs.User;
 using ChatR.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

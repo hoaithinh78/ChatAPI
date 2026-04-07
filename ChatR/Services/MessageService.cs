@@ -1,11 +1,12 @@
 ﻿using ChatR.Evens;
 using ChatR.Interface;
 using ChatR.Data;
-using ChatR.DTOs;
 using ChatR.Helpers;
 using ChatR.Models;
 using ChatR.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using ChatR.DTOs.Message;
+using ChatR.DTOs.Conversation;
 
 namespace ChatR.Services
 {
@@ -20,26 +21,21 @@ namespace ChatR.Services
             _eventPublisher = eventPublisher;
         }
 
-        public async Task<object> SendMessageAsync(long senderId, SendMessageDto dto, CancellationToken cancellationToken = default)
+        public async Task<object> SendMessageAsync(int senderId, SendMessageDto dto, CancellationToken cancellationToken = default)
         {
             dto.Content ??= "";
 
             Conversation? conversation = null;
 
-            // 🔥 PRIVATE CHAT (auto create hoặc dùng lại)
+            // 🔥 PRIVATE CHAT
             if (dto.ReceiverId.HasValue)
             {
-                var userIds = new[] { (int)senderId, dto.ReceiverId.Value };
-
                 conversation = await _dbContext.Conversations
-                    .Include(c => c.ConversationMembers)
                     .Where(c => c.Type == 1)
-                    .FirstOrDefaultAsync(c =>
-                        c.ConversationMembers.Count == 2 &&
-                        c.ConversationMembers.All(cm => userIds.Contains(cm.UserId)),
-                        cancellationToken);
+                    .Where(c => c.ConversationMembers.Any(cm => cm.UserId == senderId))
+                    .Where(c => c.ConversationMembers.Any(cm => cm.UserId == dto.ReceiverId.Value))
+                    .FirstOrDefaultAsync(cancellationToken);
 
-                // 👉 Nếu chưa có → tạo mới
                 if (conversation == null)
                 {
                     conversation = new Conversation
@@ -51,26 +47,35 @@ namespace ChatR.Services
                     _dbContext.Conversations.Add(conversation);
                     await _dbContext.SaveChangesAsync(cancellationToken);
 
-                    _dbContext.ConversationMembers.AddRange(new[]
+                    var members = new List<ConversationMember>
                     {
-                new ConversationMember { ConversationId = conversation.ConversationId, UserId = (int)senderId },
-                new ConversationMember { ConversationId = conversation.ConversationId, UserId = dto.ReceiverId.Value }
-            });
+                        new ConversationMember
+                        {
+                            ConversationId = conversation.ConversationId,
+                            UserId = senderId
+                        },
+                        new ConversationMember
+                        {
+                            ConversationId = conversation.ConversationId,
+                            UserId = dto.ReceiverId.Value
+                        }
+                    };
 
+                    _dbContext.ConversationMembers.AddRange(members);
                     await _dbContext.SaveChangesAsync(cancellationToken);
                 }
             }
 
             // ❗ VALIDATE
-            if (conversation == null && (dto.ChannelId == null || dto.ChannelId <= 0))
+            if (conversation == null && (!dto.ChannelId.HasValue || dto.ChannelId <= 0))
             {
                 throw new Exception("Phải có receiverId hoặc channelId");
             }
 
-            // 🔥 TẠO MESSAGE
+            // 🔥 CREATE MESSAGE
             var message = new Message
             {
-                SenderId = (int)senderId,
+                SenderId = senderId,
                 Content = CryptoHelper.Encrypt(dto.Content),
                 CreatedAt = DateTime.UtcNow,
                 IsDeleted = 0,
@@ -130,7 +135,8 @@ namespace ChatR.Services
             });
         }
 
-        public async Task<object> EditMessageAsync(long senderId, EditMessageDto dto, CancellationToken cancellationToken = default)
+        // 🔥 FIX: long → int
+        public async Task<object> EditMessageAsync(int senderId, EditMessageDto dto, CancellationToken cancellationToken = default)
         {
             dto.Content ??= "";
 
@@ -143,7 +149,6 @@ namespace ChatR.Services
             message.Content = CryptoHelper.Encrypt(dto.Content);
             message.EditedAt = DateTime.UtcNow;
 
-            _dbContext.Messages.Update(message);
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             return new
@@ -158,7 +163,8 @@ namespace ChatR.Services
             };
         }
 
-        public async Task DeleteMessageAsync(long senderId, int messageId, CancellationToken cancellationToken = default)
+        // 🔥 FIX: long → int
+        public async Task DeleteMessageAsync(int senderId, int messageId, CancellationToken cancellationToken = default)
         {
             var message = await _dbContext.Messages
                 .FirstOrDefaultAsync(m => m.MessageId == messageId && m.SenderId == senderId, cancellationToken);
@@ -167,7 +173,6 @@ namespace ChatR.Services
                 throw new Exception("Tin nhắn không tồn tại hoặc không có quyền xóa.");
 
             message.IsDeleted = 1;
-            _dbContext.Messages.Update(message);
             await _dbContext.SaveChangesAsync(cancellationToken);
         }
 

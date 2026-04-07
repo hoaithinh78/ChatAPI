@@ -1,4 +1,4 @@
-﻿namespace ChatR.DTOs
+﻿namespace ChatR.DTOs.Message
 {
     public class MarkMessageReadDto
     {

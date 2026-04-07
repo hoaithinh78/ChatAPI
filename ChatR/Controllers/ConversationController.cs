@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using ChatR.Hubs;
-using ChatR.DTOs;
+using ChatR.DTOs.Conversation;
 namespace ChatR.Controllers
 {
     [Route("api/[controller]")]

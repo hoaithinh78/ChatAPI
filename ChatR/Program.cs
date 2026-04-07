@@ -2,8 +2,11 @@ using ChatR.Data;
 using ChatR.Evens;
 using ChatR.Hubs;
 using ChatR.Interface;
+using ChatR.Interface.AbstractFactory;
+using ChatR.Interface.FactoryMethod;
 using ChatR.Middleware;
 using ChatR.Repository;
+using ChatR.Repository.Users;
 using ChatR.Services;
 using ChatR.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -116,12 +119,29 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IEventPublisher, EventPublisher>();
 builder.Services.AddScoped<IEventHandler<MessageCreatedEvent>, MessageNotificationHandler>();
 
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+
+//Factory pattern for channels
+builder.Services.AddScoped<IChannelFactory, TextChannelFactory>();
+builder.Services.AddScoped<IChannelFactory, VoiceChannelFactory>();
+builder.Services.AddScoped<IChannelFactory, PrivateChannelFactory>();
+
+
+builder.Services.AddScoped<ChannelFactoryProvider>();
+builder.Services.AddScoped<ChannelService>();
 builder.Services.AddAuthorization();
+
+//Fatory Method pattern for server setup
+builder.Services.AddScoped<ServerService>();
+builder.Services.AddScoped<ChannelService>();
+
+builder.Services.AddSingleton<ServerSetupFactoryProvider>();
+builder.Services.AddScoped<ChannelFactoryProvider>();
 
 var app = builder.Build();
 

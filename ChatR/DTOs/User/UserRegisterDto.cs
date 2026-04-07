@@ -1,4 +1,4 @@
-﻿namespace ChatR.DTOs
+﻿namespace ChatR.DTOs.User
 {
     public class UserRegisterDto
     {

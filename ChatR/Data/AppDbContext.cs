@@ -33,6 +33,8 @@ namespace ChatR.Data
         // Cấu hình mối quan hệ giữa các bảng
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.HasDefaultSchema("CHAT_OWNER");
+
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<User>(entity =>
@@ -163,25 +165,38 @@ namespace ChatR.Data
                 entity.Property(x => x.ServerId).HasColumnName("SERVER_ID");
                 entity.HasIndex(x => new { x.UserId, x.RoleId, x.ServerId }).IsUnique();
             });
-
             modelBuilder.Entity<Conversation>(entity =>
             {
-                entity.ToTable("CONVERSATIONS");
+                entity.ToTable("CONVERSATIONS"); // 🔥 FIX CHÍNH
+
                 entity.HasKey(x => x.ConversationId);
                 entity.Property(x => x.ConversationId).HasColumnName("CONVERSATION_ID");
                 entity.Property(x => x.Type).HasColumnName("TYPE");
                 entity.Property(x => x.Name).HasColumnName("NAME");
                 entity.Property(x => x.CreatedAt).HasColumnName("CREATED_AT");
             });
-
             modelBuilder.Entity<ConversationMember>(entity =>
             {
                 entity.ToTable("CONVERSATION_MEMBERS");
-                entity.HasKey(x => x.Id);
-                entity.Property(x => x.Id).HasColumnName("ID");
+
+                // ✅ composite key đúng theo DB
+                entity.HasKey(x => new { x.ConversationId, x.UserId });
+
+                // ✅ mapping column
                 entity.Property(x => x.ConversationId).HasColumnName("CONVERSATION_ID");
                 entity.Property(x => x.UserId).HasColumnName("USER_ID");
+
+                // ✅ quan hệ
+                entity.HasOne(cm => cm.Conversation)
+                    .WithMany(c => c.ConversationMembers)
+                    .HasForeignKey(cm => cm.ConversationId);
+
+                entity.HasOne(cm => cm.User)
+                    .WithMany()
+                    .HasForeignKey(cm => cm.UserId);
             });
+
+
 
             modelBuilder.Entity<Message>(entity =>
             {
@@ -207,6 +222,9 @@ namespace ChatR.Data
                 entity.Property(x => x.FileSize).HasColumnName("FILE_SIZE");
                 entity.Property(x => x.MessageId).HasColumnName("MESSAGE_ID");
             });
+            modelBuilder.Entity<Attachment>()
+                .Property(x => x.FileSize)
+                .HasPrecision(18, 2);
 
             modelBuilder.Entity<MessageRead>(entity =>
             {

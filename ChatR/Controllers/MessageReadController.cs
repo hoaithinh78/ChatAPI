@@ -1,9 +1,9 @@
-﻿using ChatR.DTOs;
-using ChatR.Models;
+﻿using ChatR.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ChatR.Data;
+using ChatR.DTOs.Message;
 
 namespace ChatR.Controllers
 {

@@ -1,12 +1,16 @@
-﻿using ChatR.DTOs;
+﻿using ChatR.DTOs.Conversation;
+using ChatR.DTOs.Message;
 
 namespace ChatR.Services.Interfaces
 {
     public interface IMessageService
     {
-        Task<object> SendMessageAsync(long senderId, SendMessageDto dto, CancellationToken cancellationToken = default);
+        Task<object> SendMessageAsync(int senderId, SendMessageDto dto, CancellationToken cancellationToken = default);
+
         Task<object> GetMessagesByConversationAsync(int conversationId, CancellationToken cancellationToken = default);
-        Task<object> EditMessageAsync(long senderId, EditMessageDto dto, CancellationToken cancellationToken = default);
-        Task DeleteMessageAsync(long senderId, int messageId, CancellationToken cancellationToken = default);
+
+        Task<object> EditMessageAsync(int senderId, EditMessageDto dto, CancellationToken cancellationToken = default);
+
+        Task DeleteMessageAsync(int senderId, int messageId, CancellationToken cancellationToken = default);
     }
 }
