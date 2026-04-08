@@ -3,14 +3,14 @@ using ChatR.Interface;
 using ChatR.Data;
 using ChatR.Helpers;
 using ChatR.Models;
-using ChatR.Services.Interfaces;
+using ChatR.Services.Interfaces.Decorator;
 using Microsoft.EntityFrameworkCore;
 using ChatR.DTOs.Message;
 using ChatR.DTOs.Conversation;
 
 namespace ChatR.Services
 {
-    public class MessageService : IMessageService
+    public class MessageService : IMessageServiceDecorator
     {
         private readonly AppDbContext _dbContext;
         private readonly IEventPublisher _eventPublisher;

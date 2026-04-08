@@ -2,7 +2,7 @@
 using ChatR.DTOs.Conversation;
 using ChatR.DTOs.Message;
 using ChatR.Models;
-using ChatR.Services.Interfaces;
+using ChatR.Services.Interfaces.Decorator;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,10 +15,10 @@ namespace ChatR.Controllers
     [Authorize]
     public class MessageController : ControllerBase
     {
-        private readonly IMessageService _messageService;
+        private readonly IMessageServiceDecorator _messageService;
         private readonly AppDbContext _dbContext;
 
-        public MessageController(IMessageService messageService, AppDbContext dbContext)
+        public MessageController(IMessageServiceDecorator messageService, AppDbContext dbContext)
         {
             _messageService = messageService;
             _dbContext = dbContext;

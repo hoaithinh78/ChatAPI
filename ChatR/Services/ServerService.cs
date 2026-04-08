@@ -143,8 +143,6 @@ namespace ChatR.Services
 
             _dbContext.ServerMembers.Add(member);
 
-            // Không cộng server.TotalMembers ở đây nữa
-            // vì trigger Oracle trg_add_member sẽ tự cộng
 
             await _dbContext.SaveChangesAsync();
 

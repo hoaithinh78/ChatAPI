@@ -9,6 +9,7 @@ using ChatR.Repository;
 using ChatR.Repository.Users;
 using ChatR.Services;
 using ChatR.Services.Interfaces;
+using ChatR.Services.Interfaces.Decorator;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -125,11 +126,27 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IEventPublisher, EventPublisher>();
 builder.Services.AddScoped<IEventHandler<MessageCreatedEvent>, MessageNotificationHandler>();
 
-
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
-builder.Services.AddScoped<IMessageService, MessageService>();
+//Decorator pattern for message service
+builder.Services.AddScoped<MessageService>(); // 🔥 THÊM DÒNG NÀY
 
-//Factory pattern for channels
+builder.Services.AddScoped<IMessageServiceDecorator>(sp =>
+{
+    IMessageServiceDecorator service = sp.GetRequiredService<MessageService>();
+
+    service = new MessageAuditDecorator(
+        service,
+        sp.GetRequiredService<AppDbContext>());
+
+    service = new MessageLoggingDecorator(
+        service,
+        sp.GetRequiredService<ILogger<MessageLoggingDecorator>>());
+
+    return service;
+});
+
+
+//Factory pattern for channel creation
 builder.Services.AddScoped<IChannelFactory, TextChannelFactory>();
 builder.Services.AddScoped<IChannelFactory, VoiceChannelFactory>();
 builder.Services.AddScoped<IChannelFactory, PrivateChannelFactory>();
