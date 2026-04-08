@@ -9,7 +9,7 @@ using ChatR.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
-namespace ChatR.Services
+namespace ChatR.Services.Server
 {
     public class DashboardService : IDashboardService
     {

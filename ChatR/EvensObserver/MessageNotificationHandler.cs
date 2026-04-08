@@ -1,4 +1,5 @@
-﻿using ChatR.Interface;
+﻿using ChatR.Interface.Observer;
+using ChatR.Interface.Repository;
 using ChatR.Models;
 
 namespace ChatR.Evens

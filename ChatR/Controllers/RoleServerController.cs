@@ -1,5 +1,5 @@
 ﻿using ChatR.Data;
-using ChatR.DTOs;
+using ChatR.DTOs.Role;
 using ChatR.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

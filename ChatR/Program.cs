@@ -1,15 +1,19 @@
 using ChatR.Data;
 using ChatR.Evens;
 using ChatR.Hubs;
-using ChatR.Interface;
 using ChatR.Interface.AbstractFactory;
 using ChatR.Interface.FactoryMethod;
+using ChatR.Interface.Observer;
+using ChatR.Interface.Repository;
+using ChatR.Interface.Singleton;
 using ChatR.Middleware;
-using ChatR.Repository;
+using ChatR.Repository.Notifications;
 using ChatR.Repository.Users;
-using ChatR.Services;
+using ChatR.Services.Friend;
 using ChatR.Services.Interfaces;
 using ChatR.Services.Interfaces.Decorator;
+using ChatR.Services.Messages;
+using ChatR.Services.Server;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -164,7 +168,7 @@ builder.Services.AddSingleton<ServerSetupFactoryProvider>();
 builder.Services.AddScoped<ChannelFactoryProvider>();
 
 //Singleton pattern for event publisher
-builder.Services.AddSingleton<IOnlineUserManager, OnlineUserManager>();
+builder.Services.AddSingleton<IOnlineUserTracker, OnlineUserTracker>();
 
 //
 builder.Services.AddScoped<INotificationService, NotificationService>();

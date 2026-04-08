@@ -1,5 +1,5 @@
 ﻿using ChatR.DTOs.Channels;
-using ChatR.Services;
+using ChatR.Services.Server;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

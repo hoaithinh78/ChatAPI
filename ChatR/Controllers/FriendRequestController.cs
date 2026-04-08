@@ -1,5 +1,5 @@
 ﻿using ChatR.Data;
-using ChatR.DTOs;
+using ChatR.DTOs.Friends;
 using ChatR.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

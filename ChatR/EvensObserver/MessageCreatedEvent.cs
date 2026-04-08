@@ -1,4 +1,4 @@
-﻿using ChatR.Interface;
+﻿using ChatR.Interface.Observer;
 
 namespace ChatR.Evens
 {

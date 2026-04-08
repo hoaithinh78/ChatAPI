@@ -1,11 +1,10 @@
 ﻿using ChatR.Data;
-using ChatR.DTOs;
 using ChatR.DTOs.Server;
 using ChatR.Interface.AbstractFactory;
 using ChatR.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace ChatR.Services
+namespace ChatR.Services.Server
 {
     public class ServerService
     {

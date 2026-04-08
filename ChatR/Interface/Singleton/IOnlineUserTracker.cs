@@ -1,11 +1,13 @@
-﻿namespace ChatR.Services.Interfaces
+﻿namespace ChatR.Interface.Singleton
 {
-    public interface IOnlineUserManager
+    public interface IOnlineUserTracker
     {
         void AddConnection(int userId, string connectionId);
         void RemoveConnection(string connectionId);
         bool IsUserOnline(int userId);
+        int GetConnectionCount(int userId);
         List<string> GetConnections(int userId);
-        List<int> GetOnlineUsers();
+        int GetOnlineUsersCount();
+        List<int> GetOnlineUserIds();
     }
 }

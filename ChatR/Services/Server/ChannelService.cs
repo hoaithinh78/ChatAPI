@@ -3,7 +3,7 @@ using ChatR.DTOs.Channels;
 using ChatR.Interface.FactoryMethod;
 using ChatR.Models;
 using Microsoft.EntityFrameworkCore;
-namespace ChatR.Services
+namespace ChatR.Services.Server
 {
     public class ChannelService
     {

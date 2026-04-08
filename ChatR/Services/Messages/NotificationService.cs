@@ -4,7 +4,7 @@ using ChatR.DTOs.Notification;
 using ChatR.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace ChatR.Services
+namespace ChatR.Services.Messages
 {
     public class NotificationService : INotificationService
     {

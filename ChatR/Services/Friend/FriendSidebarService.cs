@@ -4,7 +4,7 @@ using ChatR.Helpers;
 using ChatR.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace ChatR.Services
+namespace ChatR.Services.Friend
 {
     public class FriendSidebarService : IFriendSidebarService
     {

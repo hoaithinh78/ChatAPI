@@ -1,5 +1,5 @@
 ﻿using ChatR.Data;
-using ChatR.Interface;
+using ChatR.Interface.Repository;
 using ChatR.Models;
 using Microsoft.EntityFrameworkCore;
 namespace ChatR.Repository.Users

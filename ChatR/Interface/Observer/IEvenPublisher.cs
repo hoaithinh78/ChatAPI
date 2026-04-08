@@ -1,4 +1,4 @@
-﻿namespace ChatR.Interface
+﻿namespace ChatR.Interface.Observer
 {
     public interface IEventPublisher
     {

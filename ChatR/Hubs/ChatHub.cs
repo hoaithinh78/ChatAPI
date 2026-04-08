@@ -1,26 +1,30 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.SignalR;
-using ChatR.Services.Interfaces;
+using ChatR.Interface.Singleton;
 
 namespace ChatR.Hubs
 {
     public class ChatHub : Hub
     {
-        private readonly IOnlineUserManager _onlineUserManager;
+        private readonly IOnlineUserTracker _onlineUserTracker;
 
-        public ChatHub(IOnlineUserManager onlineUserManager)
+        public ChatHub(IOnlineUserTracker onlineUserTracker)
         {
-            _onlineUserManager = onlineUserManager;
+            _onlineUserTracker = onlineUserTracker;
         }
 
         public override async Task OnConnectedAsync()
         {
-            var userIdClaim = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = GetCurrentUserId();
 
-            if (int.TryParse(userIdClaim, out int userId))
+            if (userId.HasValue)
             {
-                _onlineUserManager.AddConnection(userId, Context.ConnectionId);
-                await Clients.All.SendAsync("UserOnline", userId);
+                _onlineUserTracker.AddConnection(userId.Value, Context.ConnectionId);
+
+                if (_onlineUserTracker.GetConnectionCount(userId.Value) == 1)
+                {
+                    await Clients.All.SendAsync("UserOnline", userId.Value);
+                }
             }
 
             await base.OnConnectedAsync();
@@ -28,19 +32,20 @@ namespace ChatR.Hubs
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            var userIdClaim = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = GetCurrentUserId();
 
-            int? userId = null;
-            if (int.TryParse(userIdClaim, out int parsedUserId))
+            if (userId.HasValue)
             {
-                userId = parsedUserId;
+                _onlineUserTracker.RemoveConnection(Context.ConnectionId);
+
+                if (!_onlineUserTracker.IsUserOnline(userId.Value))
+                {
+                    await Clients.All.SendAsync("UserOffline", userId.Value);
+                }
             }
-
-            _onlineUserManager.RemoveConnection(Context.ConnectionId);
-
-            if (userId.HasValue && !_onlineUserManager.IsUserOnline(userId.Value))
+            else
             {
-                await Clients.All.SendAsync("UserOffline", userId.Value);
+                _onlineUserTracker.RemoveConnection(Context.ConnectionId);
             }
 
             await base.OnDisconnectedAsync(exception);
@@ -60,6 +65,18 @@ namespace ChatR.Hubs
         public async Task LeaveConversation(int conversationId)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, conversationId.ToString());
+        }
+
+        private int? GetCurrentUserId()
+        {
+            var userIdClaim = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (int.TryParse(userIdClaim, out int userId))
+            {
+                return userId;
+            }
+
+            return null;
         }
     }
 }

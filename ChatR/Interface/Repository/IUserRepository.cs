@@ -1,6 +1,6 @@
 ﻿using ChatR.Models;
 
-namespace ChatR.Interface
+namespace ChatR.Interface.Repository
 {
     public interface IUserRepository
     {

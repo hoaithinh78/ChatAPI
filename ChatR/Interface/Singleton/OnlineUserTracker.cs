@@ -1,16 +1,11 @@
-﻿using ChatR.Services.Interfaces;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
-namespace ChatR.Services
+namespace ChatR.Interface.Singleton
 {
-    public class OnlineUserManager : IOnlineUserManager
+    public class OnlineUserTracker : IOnlineUserTracker
     {
-        // userId -> list connectionId
         private readonly ConcurrentDictionary<int, HashSet<string>> _userConnections = new();
-
-        // connectionId -> userId
         private readonly ConcurrentDictionary<string, int> _connectionUsers = new();
-
         private readonly object _lock = new();
 
         public void AddConnection(int userId, string connectionId)
@@ -50,25 +45,50 @@ namespace ChatR.Services
 
         public bool IsUserOnline(int userId)
         {
-            return _userConnections.TryGetValue(userId, out var connections) && connections.Count > 0;
+            lock (_lock)
+            {
+                return _userConnections.TryGetValue(userId, out var connections) && connections.Count > 0;
+            }
+        }
+
+        public int GetConnectionCount(int userId)
+        {
+            lock (_lock)
+            {
+                return _userConnections.TryGetValue(userId, out var connections)
+                    ? connections.Count
+                    : 0;
+            }
         }
 
         public List<string> GetConnections(int userId)
         {
-            if (_userConnections.TryGetValue(userId, out var connections))
+            lock (_lock)
             {
-                lock (_lock)
+                if (_userConnections.TryGetValue(userId, out var connections))
                 {
                     return connections.ToList();
                 }
-            }
 
-            return new List<string>();
+                return new List<string>();
+            }
         }
 
-        public List<int> GetOnlineUsers()
+        public int GetOnlineUsersCount()
         {
-            return _userConnections.Keys.ToList();
+            lock (_lock)
+            {
+                return _userConnections.Count;
+            }
+        }
+
+        public List<int> GetOnlineUserIds()
+        {
+            lock (_lock)
+            {
+                return _userConnections.Keys.ToList();
+            }
         }
     }
+
 }

@@ -1,9 +1,8 @@
 ﻿using ChatR.Data;
-using ChatR.DTOs;
 using ChatR.DTOs.Channels;
 using ChatR.DTOs.Server;
 using ChatR.Models;
-using ChatR.Services;
+using ChatR.Services.Server;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

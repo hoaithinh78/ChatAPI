@@ -1,9 +1,9 @@
-﻿using ChatR.Interface;
-using ChatR.Data;
+﻿using ChatR.Data;
 using ChatR.Models;
 using Microsoft.EntityFrameworkCore;
+using ChatR.Interface.Repository;
 
-namespace ChatR.Repository
+namespace ChatR.Repository.Notifications
 {
     public class NotificationRepository : INotificationRepository
     {

@@ -1,5 +1,4 @@
 ﻿using ChatR.Evens;
-using ChatR.Interface;
 using ChatR.Data;
 using ChatR.Helpers;
 using ChatR.Models;
@@ -7,8 +6,9 @@ using ChatR.Services.Interfaces.Decorator;
 using Microsoft.EntityFrameworkCore;
 using ChatR.DTOs.Message;
 using ChatR.DTOs.Conversation;
+using ChatR.Interface.Observer;
 
-namespace ChatR.Services
+namespace ChatR.Services.Messages
 {
     public class MessageService : IMessageServiceDecorator
     {
